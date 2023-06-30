@@ -89,7 +89,7 @@ setup()
     servoY.write(IDLE_Y);
     // take readings of joystick when not actuated
     joy_idle_X = analogRead(VRX_PIN);
-    joy_idle_Y = analogRead(VRX_PIN);
+    joy_idle_Y = analogRead(VRY_PIN);
 }
 
 
