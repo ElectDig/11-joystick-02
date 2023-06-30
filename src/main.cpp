@@ -30,29 +30,16 @@ static int joy_idle_X, joy_idle_Y;      //  Untouched position of joystick
  */
 
 static int
-process_X(void)
+process_joystick(int delta)
 {
-   int delta;
-
-    delta = analogRead(VRX_PIN) - joy_idle_X;
     if( abs(delta) < GUARD )
         return 0;
     return delta < 0 ? -1 : 1;
 }
 
-static int
-process_Y(void)
-{
-    int delta;
-
-    delta = analogRead(VRY_PIN) - joy_idle_Y;
-    if( abs(delta) < GUARD )
-        return 0;
-    return delta < 0 ? -1 : 1;
-}
 
 /*
- *  calculate_move:
+ *  calculate_move_servo:
  *      Receives:
  *          present position of servo
  *          delta movement: -1, 0 or +1
@@ -60,7 +47,7 @@ process_Y(void)
  */
 
 static int
-calculate_move( int present, int delta )
+calculate_move_servo( int present, int delta )
 {
     if( delta > 0 )
     {
@@ -96,20 +83,22 @@ setup()
 void
 loop()
 {
-    int present, result;
+    int present, delta;
 
-    present = servoX.read();                        //  present position
-    if( ( result = process_X() ) != 0 )             //  delta movement -1, 0 or +1
+    present = servoX.read();                            //  present servo position X axis
+    delta = analogRead(VRX_PIN) - joy_idle_X;           //  relative joystick position X axis
+    if( ( delta = process_joystick(delta) ) != 0 )      //  delta movement -1, 0 or +1
     {
-        present = calculate_move(present,result);   //  next angle position now in present
-        servoX.write(present);                      //  delta != 0, then go for it !
+        present = calculate_move_servo(present,delta);  //  delta != 0 then next angle position now in present
+        servoX.write(present);                          //  go for it !
     }
 
-    present = servoY.read();                        //  present position
-    if( ( result = process_Y() ) != 0 )             //  delta movement -1, 0 or +1
+    present = servoY.read();                            //  present servo position Y axis
+    delta = analogRead(VRY_PIN) - joy_idle_Y;           //  relative joystick position Y axis
+    if( ( delta = process_joystick(delta) ) != 0 )      //  delta movement -1, 0 or +1
     {
-        present = calculate_move(present,result);   //  next angle position now in present
-        servoY.write(present);                      //  delta != 0, then go for it !
+        present = calculate_move_servo(present,delta);  //  delta != 0 then next angle position now in present
+        servoY.write(present);                          //  go for it !
     }
 
     delay(PERIOD);
